@@ -5,37 +5,59 @@ use lib '.';
 use DLX;
 
 sub sudoku_to_dlx {
-    my ($puzzle) = @_;
+    my %params = @_;
+    my $puzzle  = $params{puzzle};
+    my $regions = $params{regions};
     my $dlx = DLX->new();
 
+    my $order = @$puzzle;
+    my $number_of_regions = @$regions;
+
     my @cols;
-    for my $r (0..8) {
-        for my $c (0..8) {
+    # Each cell can only have one symbol
+    for my $r (0..$order - 1) {
+        for my $c (0..$order - 1) {
             push @cols, $dlx->add_column("cell_$r$c");
         }
     }
-    for my $n (1..9) {
-        for my $r (0..8) {
-            push @cols, $dlx->add_column("row_$r$n");
-        }
-        for my $c (0..8) {
-            push @cols, $dlx->add_column("col_$c$n");
-        }
-        for my $b (0..8) {
-            push @cols, $dlx->add_column("block_$b$n");
+    for my $r (1..$order) {
+        for my $c (0..$order - 1) {
+            for my $region (@$regions) {
+                my ($a, $b) = @$region;
+                my $block = (int($r/$a) * $a) + int($c/$b);
+                push @cols, $dlx->add_column("r#$r c#$c R#$a,$b B#$block");
+            }
         }
     }
 
-    for my $r (0..8) {
-        for my $c (0..8) {
+    for my $r (0..$order - 1) {
+        for my $c (0..$order - 1) {
             if ($puzzle->[$r][$c]) {
                 my $n = $puzzle->[$r][$c];
-                my $block = int($r/3) * 3 + int($c/3);
-                $dlx->add_row("$r$c$n", $cols[$r*9+$c], $cols[81+$r*9+$n-1], $cols[162+$c*9+$n-1], $cols[243+$block*9+$n-1]);
+                my @columns;
+                for my $region (0..@$regions - 1) {
+                    my ($a, $b) = @{$regions->[$region]};
+                    my $block = (int($r/$a) * $a) + int($c/$b);
+
+                    push @columns, $cols[(($region+1) * $order**2) + ($block*$order)+($n-1)];
+                }
+
+                # Add the cell column
+                push @columns, $cols[$r*$order+$c];
+                $dlx->add_row("$r$c$n", @columns);
             } else {
-                for my $n (1..9) {
-                    my $block = int($r/3) * 3 + int($c/3);
-                    $dlx->add_row("$r$c$n", $cols[$r*9+$c], $cols[81+$r*9+$n-1], $cols[162+$c*9+$n-1], $cols[243+$block*9+$n-1]);
+                for my $n (1..$order) {
+                    my @columns;
+                    for my $region (0..scalar @$regions - 1) {
+                        my ($a, $b) = @{$regions->[$region]};
+                        my $block = (int($r/$a) * $a) + int($c/$b);
+
+                        push @columns, $cols[(($region+1) * $order**2) + ($block*$order)+($n-1)];
+                    }
+
+                    # Add the cell column
+                    push @columns, $cols[$r*$order+$c];
+                    $dlx->add_row("$r$c$n",  @columns);
                 }
             }
         }
@@ -46,7 +68,14 @@ sub sudoku_to_dlx {
 
 sub solve_sudoku {
     my ($puzzle) = @_;
-    my $dlx = sudoku_to_dlx($puzzle);
+    my $dlx = sudoku_to_dlx(
+        regions => [
+            [1,9],
+            [9,1],
+            [3,3],
+        ],
+        puzzle => $puzzle,
+    );
     my $solutions = $dlx->solve();
 
     return $solutions;
