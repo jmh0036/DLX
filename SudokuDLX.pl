@@ -20,6 +20,8 @@ sub sudoku_to_dlx {
             push @cols, $dlx->add_column("cell_$r$c");
         }
     }
+
+    # Each symbol can only appear once in each row, column, and region
     for my $r (1..$order) {
         for my $c (0..$order - 1) {
             for my $region (@$regions) {
@@ -66,33 +68,35 @@ sub sudoku_to_dlx {
     return $dlx;
 }
 
+# When we me this a module, this is what we will export
 sub solve_sudoku {
-    my ($puzzle) = @_;
+    my %params  = @_;
+    my $puzzle  = $params{puzzle};
+    my $regions = $params{regions};
+
+    # validate the regions
+    my $puzzle_size = scalar @$puzzle;
+    for my $region (@$regions) {
+        my ($a, $b) = @$region;
+        die "Invalid region size: $a x $b for puzzle of size $puzzle_size\n" if $a * $b != @$puzzle;
+    }
+
+    # validate the puzzle size
+    for my $row (@$puzzle) {
+        die "Invalid row size: @$row should have size $puzzle_size\n" if @$row != $puzzle_size;
+    }
+
     my $dlx = sudoku_to_dlx(
-        regions => [
-            [1,9],
-            [9,1],
-            [3,3],
-        ],
-        puzzle => $puzzle,
+        regions => $regions,
+        puzzle  => $puzzle,
     );
     my $solutions = $dlx->solve();
 
     return $solutions;
 }
 
-# Blank puzzle for easy copy pasta
-# my $puzzle = [
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-# ];
+
+# Example usage when  this becomes a module
 my $puzzle = [
     [0, 2, 0, 0, 7, 0, 0, 0, 0],
     [0, 0, 1, 0, 0, 0, 8, 4, 0],
@@ -105,7 +109,10 @@ my $puzzle = [
     [0, 0, 0, 0, 0, 0, 0, 0, 8],
 ];
 
-my $solutions = solve_sudoku($puzzle);
+my $solutions = solve_sudoku(
+    puzzle  => $puzzle,
+    regions => [ [1,9], [9,1], [3,3] ],
+);
 
 print "No solutions found\n" unless @$solutions;
 

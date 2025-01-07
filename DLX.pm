@@ -3,6 +3,8 @@ package DLX;
 use strict;
 use warnings;
 
+our $VERSION = '0.1.0';
+
 # Node structure for DLX
 package DLX::Node;
 sub new {
@@ -72,7 +74,7 @@ sub add_row {
 
     for my $col (@cols) {
         my $node = DLX::Node->new($row, $col->{name});
-        $node->{column} = $col;
+        $node->{column}     = $col;
         $col->{size}++;
         $node->{up}         = $col->{up};
         $node->{down}       = $col;
