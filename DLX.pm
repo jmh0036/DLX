@@ -205,7 +205,7 @@ Solve the exact cover problem and return the solutions.
 
 =head1 AUTHOR
 
-Your Name <james.hammer3@gmail.com>
+James Hammer <james.hammer3@gmail.com>
 
 =head1 LICENSE
 
