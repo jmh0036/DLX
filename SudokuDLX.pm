@@ -1,8 +1,15 @@
+package SudokuDLX;
+
 use strict;
 use warnings;
 
+our $VERSION = '0.1.0';
+
 use lib '.';
 use DLX;
+
+use Exporter        qw( import );
+our @EXPORT_OK  =   qw( solve_sudoku );  # symbols to export on request
 
 sub sudoku_to_dlx {
     my %params = @_;
@@ -84,6 +91,11 @@ sub solve_sudoku {
     # validate the puzzle size
     for my $row (@$puzzle) {
         die "Invalid row size: @$row should have size $puzzle_size\n" if @$row != $puzzle_size;
+
+        # validate the cell values
+        for my $cell (@$row) {
+            die "Invalid cell value: $cell should be between 0 and $puzzle_size\n" if $cell < 0 || $cell > $puzzle_size;
+        }
     }
 
     my $dlx = sudoku_to_dlx(
@@ -95,38 +107,80 @@ sub solve_sudoku {
     return $solutions;
 }
 
+1
 
-# Example usage when  this becomes a module
-my $puzzle = [
-    [0, 2, 0, 0, 7, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 8, 4, 0],
-    [0, 0, 0, 5, 0, 0, 1, 0, 0],
-    [9, 0, 0, 0, 1, 0, 7, 6, 4],
-    [5, 0, 0, 0, 6, 0, 0, 0, 0],
-    [4, 0, 0, 0, 9, 0, 0, 3, 0],
-    [0, 0, 7, 9, 0, 0, 0, 0, 0],
-    [0, 3, 0, 4, 0, 0, 0, 5, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 8],
-];
+__END__
 
-my $solutions = solve_sudoku(
-    puzzle  => $puzzle,
-    regions => [ [1,9], [9,1], [3,3] ],
-);
+=head1 NAME
 
-print "No solutions found\n" unless @$solutions;
+DLX - Dancing Links Algorithm for Exact Cover Problems Extended to Solve
+Sudoku Puzzles (and generalizations of Sudoku)
 
-my $solution_count = 0;
-for my $solution (@$solutions) {
-    $solution_count++;
-    print "\n" unless $solution_count == 1;
-    print "Solution $solution_count:\n";
-    my $puzzle_solution = [];
-    for my $cell (@$solution) {
-        my ($r, $c, $n) = $cell =~ /(\d)(\d)(\d)/;
-        $puzzle_solution->[$r][$c] = $n;
+=head1 SYNOPSIS
+
+    my $puzzle = [
+        [0, 2, 0, 0, 7, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 8, 4, 0],
+        [0, 0, 0, 5, 0, 0, 1, 0, 0],
+        [9, 0, 0, 0, 1, 0, 7, 6, 4],
+        [5, 0, 0, 0, 6, 0, 0, 0, 0],
+        [4, 0, 0, 0, 9, 0, 0, 3, 0],
+        [0, 0, 7, 9, 0, 0, 0, 0, 0],
+        [0, 3, 0, 4, 0, 0, 0, 5, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 8],
+    ];
+
+    my $solutions = solve_sudoku(
+        puzzle  => $puzzle,
+        regions => [ [1,9], [9,1], [3,3] ],
+    );
+
+    print "No solutions found\n" unless @$solutions;
+
+    my $solution_count = 0;
+    for my $solution (@$solutions) {
+        $solution_count++;
+        print "\n" unless $solution_count == 1;
+        print "Solution $solution_count:\n";
+        my $puzzle_solution = [];
+        for my $cell (@$solution) {
+            my ($r, $c, $n) = $cell =~ /(\d)(\d)(\d)/;
+            $puzzle_solution->[$r][$c] = $n;
+        }
+        for my $row (@$puzzle_solution) {
+            print join(" ", @$row), "\n";
+        }
     }
-    for my $row (@$puzzle_solution) {
-        print join(" ", @$row), "\n";
-    }
-}
+
+=head1 DESCRIPTION
+
+This module implements the Dancing Links (DLX) algorithm for solving exact
+cover problems and extends it to solve generalizations Sudoku. These puzzles
+include Sudoku Pair Latin Squares as well as Factor Pair Latin Squares
+
+=head1 METHODS
+
+=head2 solve_sudoku
+
+takes a puzzle and a list of regions and returns a list of solutions.
+
+=item puzzle
+
+A reference to a 2D array representing the puzzle. Each cell should contain
+a number between 0 and the size of the puzzle.
+
+=item regions
+
+A reference to a list of regions. Each region is a reference to a 2-element
+array representing the dimensions of the region. The product of the
+dimensions of each region should be equal to the size of the puzzle.
+
+=head1 AUTHOR
+
+James Hammer <james.hammer3@gmail.com>
+
+=head1 LICENSE
+
+This module is licensed under the same terms as Perl itself.
+
+=cut
