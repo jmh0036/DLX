@@ -76,7 +76,7 @@ for my $test (@$tests) {
 }
 
 # Test 3: Invalid region size
-my $puzzle3 = [
+my $nine_zeros = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -87,17 +87,17 @@ my $puzzle3 = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
-my $regions3 = [ [2,5] ];
+my $invalid_regions = [ [2,5] ];
 eval {
     solve_sudoku(
-        puzzle  => $puzzle3,
-        regions => $regions3,
+        puzzle  => $nine_zeros,
+        regions => $invalid_regions,
     );
 };
 like($@, qr/Invalid region size/, 'Puzzle 3 has invalid region size');
 
 # Test 4: Invalid cell value
-my $puzzle4 = [
+my $invalid_cell_puzzle = [
     [0, 2, 0, 0, 7, 0, 0, 0, 0],
     [0, 0, 1, 0, 0, 0, 8, 4, 0],
     [0, 0, 0, 5, 0, 0, 1, 0, 0],
@@ -108,11 +108,15 @@ my $puzzle4 = [
     [0, 3, 0, 4, 0, 0, 0, 5, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 8],
 ];
-my $regions4 = [ [1,9], [9,1], [3,3] ];
+my $sudoku_regions = [ [1,9], [9,1], [3,3] ];
 eval {
     solve_sudoku(
-        puzzle  => $puzzle4,
-        regions => $regions4,
+        puzzle  => $invalid_cell_puzzle,
+        regions => $sudoku_regions,
     );
 };
 like($@, qr/Invalid cell value/, 'Puzzle 4 has invalid cell value');
+
+1;
+
+__END__
