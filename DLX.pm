@@ -124,10 +124,14 @@ sub uncover {
 }
 
 sub search {
-    my ($self, $k) = @_;
+    my ($self, $k, $first_solution) = @_;
 
     if ($self->{header}->{right} == $self->{header}) {
         push @{$self->{solutions}}, [@{$self->{solution}}];
+        return;
+    }
+
+    if ($first_solution && @{$self->{solutions}}) {
         return;
     }
 
@@ -142,7 +146,7 @@ sub search {
         for (my $node = $row->{right}; $node != $row; $node = $node->{right}) {
             $self->cover($node->{column});
         }
-        $self->search($k + 1);
+        $self->search($k + 1, $first_solution);
         for (my $node = $row->{left}; $node != $row; $node = $node->{left}) {
             $self->uncover($node->{column});
         }
@@ -153,9 +157,11 @@ sub search {
 }
 
 sub solve {
-    my ($self) = @_;
+    my ($self, %params) = @_;
 
-    $self->search(0);
+    my $first_solution = $params{first_solution} || 0;
+
+    $self->search(0, $first_solution);
 
     return $self->{solutions};
 }

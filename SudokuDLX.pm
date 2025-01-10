@@ -77,9 +77,11 @@ sub sudoku_to_dlx {
 
 # When we me this a module, this is what we will export
 sub solve_sudoku {
-    my %params  = @_;
-    my $puzzle  = $params{puzzle};
-    my $regions = $params{regions};
+    my %params          = @_;
+
+    my $puzzle          = $params{puzzle};
+    my $regions         = $params{regions};
+    my $first_solution  = $params{first_solution} || 0;
 
     # validate the regions
     my $puzzle_size = scalar @$puzzle;
@@ -102,7 +104,7 @@ sub solve_sudoku {
         regions => $regions,
         puzzle  => $puzzle,
     );
-    my $solutions = $dlx->solve();
+    my $solutions = $dlx->solve(first_solution => $first_solution);
 
     return $solutions;
 }

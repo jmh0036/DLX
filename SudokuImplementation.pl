@@ -2,23 +2,21 @@ use strict;
 use warnings;
 
 use lib '.';
-use SudokuDLX qw(solve_sudoku);
+use SudokuDLX qw( solve_sudoku );
 
 my $puzzle = [
-    [0, 2, 0, 0, 7, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 8, 4, 0],
-    [0, 0, 0, 5, 0, 0, 1, 0, 0],
-    [9, 0, 0, 0, 1, 0, 7, 6, 4],
-    [5, 0, 0, 0, 6, 0, 0, 0, 0],
-    [4, 0, 0, 0, 9, 0, 0, 3, 0],
-    [0, 0, 7, 9, 0, 0, 0, 0, 0],
-    [0, 3, 0, 4, 0, 0, 0, 5, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 8],
+    [ 1, 2, 3, 4, 5, 6 ],
+    [ 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0 ],
 ];
 
 my $solutions = solve_sudoku(
-    puzzle  => $puzzle,
-    regions => [ [1,9], [9,1], [3,3] ],
+    puzzle          => $puzzle,
+    regions         => [ [1,6], [6,1], [2,3], [3,2], ],
+    first_solution  => 1,
 );
 
 print "No solutions found\n" unless @$solutions;

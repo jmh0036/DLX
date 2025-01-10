@@ -44,7 +44,9 @@ while ( my @triangle = $triangles->next_combination ) {
 }
 
 # Solve the DLX matrix
-my $solutions = $dlx->solve;
+my $solutions = $dlx->solve(
+    first_solution => 1,
+);
 
 # Print the number of solutions
 print "No solutions found\n" unless @$solutions;
