@@ -53,7 +53,7 @@ sub sudoku_to_dlx {
 
                 # Add the cell column
                 push @columns, $cols[$r*$order+$c];
-                $dlx->add_row("$r$c$n", @columns);
+                $dlx->add_row("$r $c $n", @columns);
             } else {
                 for my $n (1..$order) {
                     my @columns;
@@ -66,7 +66,7 @@ sub sudoku_to_dlx {
 
                     # Add the cell column
                     push @columns, $cols[$r*$order+$c];
-                    $dlx->add_row("$r$c$n",  @columns);
+                    $dlx->add_row("$r $c $n",  @columns);
                 }
             }
         }

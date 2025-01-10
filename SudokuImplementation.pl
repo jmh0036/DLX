@@ -5,17 +5,13 @@ use lib '.';
 use SudokuDLX qw( solve_sudoku );
 
 my $puzzle = [
-    [ 1, 2, 3, 4, 5, 6 ],
-    [ 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0 ],
+    [ 1..12 ],
+    ([ (0) x 12 ]) x 11,
 ];
 
 my $solutions = solve_sudoku(
     puzzle          => $puzzle,
-    regions         => [ [1,6], [6,1], [2,3], [3,2], ],
+    regions         => [ [1,12], [12,1], [2,6], [6,2], [4,3], ],
     first_solution  => 1,
 );
 
@@ -28,7 +24,7 @@ for my $solution (@$solutions) {
     print "Solution $solution_count:\n";
     my $puzzle_solution = [];
     for my $cell (@$solution) {
-        my ($r, $c, $n) = $cell =~ /(\d)(\d)(\d)/;
+        my ($r, $c, $n) = $cell =~ /(\d+) (\d+) (\d+)/;
         $puzzle_solution->[$r][$c] = $n;
     }
     for my $row (@$puzzle_solution) {
