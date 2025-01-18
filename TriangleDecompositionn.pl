@@ -36,7 +36,9 @@ for my $block (@required_blocks) {
 # Add all possible edges to the DLX matrix
 my %edges;
 while ( my @edge = $complete_edgeset->next_combination ) {
-    $edges{"$edge[0] $edge[1]"} = $dlx->add_column("@edge") unless grep { $_ eq "$edge[0] $edge[1]" } @edges_covered;
+    my $edge_is_covered = grep { $_ eq "$edge[0] $edge[1]" } @edges_covered;
+
+    $edges{"$edge[0] $edge[1]"} = $dlx->add_column("@edge") unless $edge_is_covered;
 }
 
 # Add all possible triangles as rows to the DLX matrix, excluding required blocks
@@ -47,16 +49,22 @@ my $triangles = Math::Combinatorics->new(
 
 while ( my @triangle = $triangles->next_combination ) {
     next if grep { join(' ', @$_) eq join(' ', @triangle) } @required_blocks;
+
     my @edges;
     for my $i (0 .. $decomp_order - 1) {
         for my $j ($i+1..$decomp_order - 1) {
             if (defined $edges{"$triangle[$i] $triangle[$j]"}){
-                push @edges, "$triangle[$i] $triangle[$j]" unless grep { $_ eq "$triangle[$i] $triangle[$j]" } @edges_covered;
+                my $edge_is_covered = grep { $_ eq "$triangle[$i] $triangle[$j]" } @edges_covered;
+
+                push @edges, "$triangle[$i] $triangle[$j]" unless $edge_is_covered;
             } else {
-                push @edges, "$triangle[$j] $triangle[$i]" unless grep { $_ eq "$triangle[$j] $triangle[$i]" } @edges_covered;
+                my $edge_is_covered = grep { $_ eq "$triangle[$j] $triangle[$i]" } @edges_covered;
+
+                push @edges, "$triangle[$j] $triangle[$i]" unless $edge_is_covered;
             }
         }
     }
+
     my @covered_edges = map { $edges{$_} } @edges;
     $dlx->add_row("@triangle", @covered_edges) unless scalar @edges < $decomp_order;
 }
@@ -72,18 +80,15 @@ print "No solutions found\n" unless @$solutions;
 # Print the solutions
 my $solution_count = 0;
 for my $solution (@$solutions) {
-    $solution_count++;;
+    $solution_count++;
     print "\n" unless $solution_count == 1;
     print "Solution $solution_count:\n";
-    my $triangle_solution = [];
-    for my $block (@required_blocks) {
-        push @$triangle_solution, $block;
-    }
+    my @triangle_solution = @required_blocks;
     for my $edge (@$solution) {
         my @triangle = split ' ', $edge;
-        push @$triangle_solution, \@triangle;
+        push @triangle_solution, \@triangle;
     }
-    for my $triangle (@$triangle_solution) {
+    for my $triangle (@triangle_solution) {
         print join(" ", @$triangle), "\n";
     }
 }
