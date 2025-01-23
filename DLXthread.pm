@@ -1,9 +1,10 @@
-package DLX;
+package DLXthread;
 
 use strict;
 use warnings;
 
-our $VERSION = '0.1.0';
+use forks;
+use Thread::Queue;
 
 # Node structure for DLX
 package DLX::Node;
@@ -162,6 +163,77 @@ sub solve {
     my $number_of_solutions = $params{number_of_solutions};
 
     $self->search(0, $number_of_solutions);
+
+    return $self->{solutions};
+}
+
+# Modified search method for parallel execution with a start column
+sub parallel_search {
+    my ($self, $k, $number_of_solutions, $queue, $start_col) = @_;
+
+    if ($self->{header}->{right} == $self->{header}) {
+        push @{$self->{solutions}}, [@{$self->{solution}}];
+        $queue->enqueue([@{$self->{solution}}]);
+        return;
+    }
+
+    if (@{$self->{solutions}} >= $number_of_solutions) {
+        return;
+    }
+
+    my $col = $start_col || $self->{header}->{right};
+    for (my $c = $col->{right}; $c != $self->{header}; $c = $c->{right}) {
+        $col = $c if $c->{size} < $col->{size};
+    }
+
+    $self->cover($col);
+    for (my $row = $col->{down}; $row != $col; $row = $row->{down}) {
+        push @{$self->{solution}}, $row->{row};
+        for (my $node = $row->{right}; $node != $row; $node = $node->{right}) {
+            $self->cover($node->{column});
+        }
+        $self->parallel_search($k + 1, $number_of_solutions, $queue);
+        for (my $node = $row->{left}; $node != $row; $node = $node->{left}) {
+            $self->uncover($node->{column});
+        }
+        pop @{$self->{solution}};
+    }
+
+    $self->uncover($col);
+}
+
+# New solve method with parallelization
+sub parallel_solve {
+    my ($self, %params) = @_;
+
+    my $num_threads = $params{num_threads} || 4;
+    my $number_of_solutions = $params{number_of_solutions} || 1;
+    print "Number of threads: $num_threads\n";
+
+    my $queue = Thread::Queue->new();
+    my @threads;
+    my $start_col = $self->{header}->{right};
+
+    for (1..$num_threads) {
+        my $thread = threads->create(sub {
+            my $dlx = DLX->new();
+            # Initialize DLX structure with the same columns and rows
+            $dlx->{header} = $self->{header};
+            $dlx->parallel_search(int(rand(256)), $number_of_solutions, $queue, $start_col);
+        });
+        push @threads, $thread;
+        $start_col = $start_col->{right} if $start_col->{right} != $self->{header};
+    }
+
+    my $found_solutions = 0;
+    while ($found_solutions < $number_of_solutions) {
+        if (my $solution = $queue->dequeue()) {
+            push @{$self->{solutions}}, $solution;
+            $found_solutions++;
+        }
+    }
+
+    $_->detach() for @threads;
 
     return $self->{solutions};
 }

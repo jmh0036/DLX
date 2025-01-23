@@ -2,15 +2,15 @@ use strict;
 use warnings;
 
 use lib '.';
-use DLX;
+use DLXthread;
 use Math::Combinatorics;
 
 # K_3 decomp exists if n equiv 1 or 3 mod 6
 # K_4 decomp may exist if n equiv 1 or 4 mod 12
-my $order = 7;
-my $decomp_order = 3;
+my $order = 25;
+my $decomp_order = 4;
 my @required_blocks = (
-    [2, 3, 7],
+    # [2, 3, 7],
     # [1, 5, 7],
     # [1, 3, 4],
 );
@@ -70,8 +70,12 @@ while ( my @triangle = $triangles->next_combination ) {
 }
 
 # Solve the DLX matrix
-my $solutions = $dlx->solve(
-    # number_of_solutions => 1,
+# my $solutions = $dlx->solve(
+#     number_of_solutions => 1,
+# );
+
+my $solutions = $dlx->parallel_solve(
+    number_of_solutions => 1,
 );
 
 # Print the number of solutions

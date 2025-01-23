@@ -2,17 +2,24 @@ use strict;
 use warnings;
 
 use lib '.';
-use SudokuDLX qw( solve_sudoku );
+use SudokuDLXthread qw( solve_sudoku );
+
+my $order = 55;
 
 my $puzzle = [
-    [ 1..12 ],
-    ([ (0) x 12 ]) x 11,
+    [ 1..$order ],
+    ([ (0) x $order ]) x ($order - 1),
 ];
 
 my $solutions = solve_sudoku(
-    puzzle          => $puzzle,
-    regions         => [ [1,12], [12,1], [2,6], [6,2], [4,3], ],
-    first_solution  => 1,
+    puzzle              => $puzzle,
+    regions             => [
+        [1,$order],
+        [$order,1],
+        [5,11],
+        [11,5],
+    ],
+    number_of_solutions => 1,
 );
 
 print "No solutions found\n" unless @$solutions;

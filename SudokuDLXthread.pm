@@ -1,4 +1,4 @@
-package SudokuDLX;
+package SudokuDLXthread;
 
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use warnings;
 our $VERSION = '0.1.0';
 
 use lib '.';
-use DLX;
+use DLXthread;
 
 use Exporter        qw( import );
 our @EXPORT_OK  =   qw( solve_sudoku );  # symbols to export on request
@@ -104,7 +104,7 @@ sub solve_sudoku {
         regions => $regions,
         puzzle  => $puzzle,
     );
-    my $solutions = $dlx->solve(
+    my $solutions = $dlx->parallel_solve(
         number_of_solutions => $number_of_solutions
     );
 
